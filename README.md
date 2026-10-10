@@ -1,61 +1,106 @@
-# 🚀 Getting started with Strapi
+# The Friendly Dev — Backend (Strapi CMS)
 
-Strapi comes with a full featured [Command Line Interface](https://docs.strapi.io/dev-docs/cli) (CLI) which lets you scaffold and manage your project in seconds.
+[![CI](https://github.com/Soheil86/friendly-dev-backend/actions/workflows/ci.yml/badge.svg)](https://github.com/Soheil86/friendly-dev-backend/actions/workflows/ci.yml)
 
-### `develop`
+Headless CMS and REST API for **The Friendly Dev** portfolio, built with **Strapi 5** and **TypeScript**. It stores projects and blog posts in **PostgreSQL** and serves media through **Cloudinary**.
 
-Start your Strapi application with autoReload enabled. [Learn more](https://docs.strapi.io/dev-docs/cli#strapi-develop)
+**🖥️ Frontend repo:** [Soheil86/friendly-dev](https://github.com/Soheil86/friendly-dev)
+**🔗 Live site:** [friendly-dev-dun.vercel.app](https://friendly-dev-dun.vercel.app)
+
+## Tech stack
+
+- **Strapi 5** (TypeScript): content types, admin panel, REST API
+- **PostgreSQL** in production (SQLite works out of the box for local development)
+- **Cloudinary** upload provider for images
+- **Users & Permissions** plugin with refresh-token JWT management and httpOnly sessions
+- Hardened upload config: an allow-list of MIME types, with SVG and executables denied
+- Content Security Policy configured for Cloudinary media
+- **GitHub Actions** CI (install + build)
+
+## Content model
+
+### Project (`/api/projects`)
+
+| Field         | Type        | Notes                                           |
+| ------------- | ----------- | ----------------------------------------------- |
+| `title`       | string      |                                                 |
+| `description` | string      |                                                 |
+| `image`       | media       | Stored on Cloudinary                            |
+| `url`         | string      | Link to the live project                        |
+| `date`        | date        |                                                 |
+| `category`    | enumeration | `Frontend` · `Fullstack` · `Design` · `Mobile`  |
+| `featured`    | boolean     | Shown on the homepage                           |
+
+### Post (`/api/posts`)
+
+| Field     | Type     | Notes                     |
+| --------- | -------- | ------------------------- |
+| `title`   | string   |                           |
+| `slug`    | uid      | Generated from the title  |
+| `excerpt` | text     |                           |
+| `body`    | richtext | Markdown                  |
+| `date`    | datetime |                           |
+| `image`   | media    | Stored on Cloudinary      |
+
+## Example requests
+
+```bash
+# Featured projects with their images
+GET /api/projects?filters[featured][$eq]=true&populate=*
+
+# Blog posts, newest first
+GET /api/posts?populate=*&sort=date:desc
+
+# A single post by slug
+GET /api/posts?filters[slug][$eq]=writing-clean-code&populate=*
+```
+
+The frontend reads content without a token, so `find` and `findOne` must be enabled for both content types under **Settings → Users & Permissions → Roles → Public**.
+
+## Getting started
+
+**Prerequisites:** Node.js 20+ and, optionally, PostgreSQL and a Cloudinary account.
+
+```bash
+git clone https://github.com/Soheil86/friendly-dev-backend.git
+cd friendly-dev-backend
+npm install
+cp .env.example .env   # fill in secrets, database and Cloudinary values
+npm run develop        # admin panel at http://localhost:1337/admin
+```
+
+If `DATABASE_CLIENT` isn't set, Strapi falls back to a local SQLite database, which is the quickest way to try it out.
+
+### Environment variables
+
+| Variable | Description |
+| -------- | ----------- |
+| `HOST`, `PORT` | Server address (default `0.0.0.0:1337`) |
+| `APP_KEYS`, `API_TOKEN_SALT`, `ADMIN_JWT_SECRET`, `TRANSFER_TOKEN_SALT`, `JWT_SECRET`, `ENCRYPTION_KEY` | Strapi secrets |
+| `DATABASE_CLIENT` | `postgres`, `mysql` or `sqlite` |
+| `DATABASE_URL`, or `DATABASE_HOST` / `PORT` / `NAME` / `USERNAME` / `PASSWORD` | Database connection |
+| `DATABASE_SSL` | `true` for hosted Postgres |
+| `CLOUDINARY_NAME`, `CLOUDINARY_KEY`, `CLOUDINARY_SECRET` | Cloudinary credentials |
+
+### Scripts
+
+| Command           | Description                              |
+| ----------------- | ---------------------------------------- |
+| `npm run develop` | Start with auto-reload and admin panel   |
+| `npm run build`   | Build the admin panel                    |
+| `npm run start`   | Start in production mode                 |
+
+## Project structure
 
 ```
-npm run develop
-# or
-yarn develop
+config/        # Server, database, plugins (Cloudinary, auth), middlewares (CSP)
+src/api/
+├── project/   # Content type schema, controller, routes, service
+└── post/
+database/      # Migrations
+types/         # Generated TypeScript types
 ```
 
-### `start`
+## Author
 
-Start your Strapi application with autoReload disabled. [Learn more](https://docs.strapi.io/dev-docs/cli#strapi-start)
-
-```
-npm run start
-# or
-yarn start
-```
-
-### `build`
-
-Build your admin panel. [Learn more](https://docs.strapi.io/dev-docs/cli#strapi-build)
-
-```
-npm run build
-# or
-yarn build
-```
-
-## ⚙️ Deployment
-
-Strapi gives you many possible deployment options for your project including [Strapi Cloud](https://cloud.strapi.io). Browse the [deployment section of the documentation](https://docs.strapi.io/dev-docs/deployment) to find the best solution for your use case.
-
-```
-yarn strapi deploy
-```
-
-## 📚 Learn more
-
-- [Resource center](https://strapi.io/resource-center) - Strapi resource center.
-- [Strapi documentation](https://docs.strapi.io) - Official Strapi documentation.
-- [Strapi tutorials](https://strapi.io/tutorials) - List of tutorials made by the core team and the community.
-- [Strapi blog](https://strapi.io/blog) - Official Strapi blog containing articles made by the Strapi team and the community.
-- [Changelog](https://strapi.io/changelog) - Find out about the Strapi product updates, new features and general improvements.
-
-Feel free to check out the [Strapi GitHub repository](https://github.com/strapi/strapi). Your feedback and contributions are welcome!
-
-## ✨ Community
-
-- [Discord](https://discord.strapi.io) - Come chat with the Strapi community including the core team.
-- [Forum](https://forum.strapi.io/) - Place to discuss, ask questions and find answers, show your Strapi project and get feedback or just talk with other Community members.
-- [Awesome Strapi](https://github.com/strapi/awesome-strapi) - A curated list of awesome things related to Strapi.
-
----
-
-<sub>🤫 Psst! [Strapi is hiring](https://strapi.io/careers).</sub>
+**Soheil Ghanbari** — [GitHub](https://github.com/Soheil86)

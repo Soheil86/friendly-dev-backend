@@ -2,7 +2,7 @@
   "name": "friendly-dev-backend",
   "version": "0.1.0",
   "private": true,
-  "description": "A Strapi application",
+  "description": "Headless Strapi 5 CMS powering The Friendly Dev portfolio",
   "scripts": {
     "build": "strapi build",
     "console": "strapi console",
